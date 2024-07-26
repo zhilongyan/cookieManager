@@ -6,7 +6,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       cookies.forEach(cookie => {
         document.cookie = `${cookie.name}=${cookie.value}; path=/`;
       });
-      alert('Cookies copied successfully!');
+      alert(`复制成功了${cookies.length}个！`)
     });
   }
 });
