@@ -1,8 +1,11 @@
+// 弹出窗口的JavaScript逻辑
 document.addEventListener('DOMContentLoaded', function() {
   const domainInput = document.getElementById('domainInput');
   const domainList = document.getElementById('domainList');
   const copyButton = document.getElementById('copyButton');
+  const historyContainer = document.getElementById('historyContainer');
   let domains = [];
+  let history = [];
 
   function updateDatalist() {
     domainList.innerHTML = '';
@@ -19,6 +22,45 @@ document.addEventListener('DOMContentLoaded', function() {
       domainList.appendChild(item);
     });
     domainList.style.display = filteredDomains.length > 0 ? 'block' : 'none';
+  }
+
+  function updateHistory() {
+    historyContainer.innerHTML = '';
+    history.forEach(domain => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
+      item.textContent = domain;
+      item.onclick = function(e) {
+        if (e.target !== item.querySelector('.delete')) {
+          copyCookies(domain);
+        }
+      };
+      const deleteButton = document.createElement('span');
+      deleteButton.className = 'delete';
+      deleteButton.textContent = '×';
+      deleteButton.onclick = function(e) {
+        e.stopPropagation();
+        history = history.filter(d => d !== domain);
+        chrome.storage.local.set({history: history});
+        updateHistory();
+      };
+      item.appendChild(deleteButton);
+      historyContainer.appendChild(item);
+    });
+  }
+
+  function copyCookies(domain) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      chrome.tabs.sendMessage(tabs[0].id, {action: "copyCookies", domain: domain});
+      if (!history.includes(domain)) {
+        history.unshift(domain);
+        if (history.length > 5) {
+          history.pop();
+        }
+        chrome.storage.local.set({history: history});
+        updateHistory();
+      }
+    });
   }
 
   domainInput.addEventListener('input', updateDatalist);
@@ -50,11 +92,14 @@ document.addEventListener('DOMContentLoaded', function() {
   copyButton.addEventListener('click', function() {
     const selectedDomain = domainInput.value;
     if (selectedDomain) {
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.sendMessage(tabs[0].id, {action: "copyCookies", domain: selectedDomain});
-      });
+      copyCookies(selectedDomain);
     } else {
       alert('Please select or enter a domain');
     }
+  });
+
+  chrome.storage.local.get('history', function(result) {
+    history = result.history || [];
+    updateHistory();
   });
 });

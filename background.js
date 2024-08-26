@@ -1,3 +1,4 @@
+// 后台脚本,用于处理跨域Cookie操作
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "getCookies") {
     chrome.cookies.getAll({domain: request.domain}, (cookies) => {

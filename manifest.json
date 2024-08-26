@@ -5,7 +5,8 @@
   "description": "Copy cookies from other domains to the current domain",
   "permissions": [
     "activeTab",
-    "cookies"
+    "cookies",
+    "storage"
   ],
   "host_permissions": [
     "<all_urls>"

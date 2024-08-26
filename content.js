@@ -1,3 +1,4 @@
+// 内容脚本,用于在当前页面注入Cookie
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "copyCookies") {
     chrome.runtime.sendMessage({action: "getCookies", domain: request.domain}, (response) => {
